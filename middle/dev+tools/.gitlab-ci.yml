@@ -1,0 +1,60 @@
+stages:
+  - validate
+  - test
+  - build
+  - deploy
+
+validate:
+  stage: check
+  image: node:20-alpine
+  tags:
+    - protei-lab-docker-runner
+  before_script:
+    - apk add git
+    - rm -rf ./build
+    - sh ./scripts/install.sh --ci
+  script:
+    - sh ./scripts/validate.sh --ci --ci-gitlab
+  after_script:
+    - mkdir -p ./build
+    - cp ./packages/app/globus/build/code-quality-report-gitlab.json ./build/code-quality-report-gitlab.json
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    paths:
+      - ./build/code-quality-report-gitlab.json
+    reports:
+      codequality: ./build/code-quality-report-gitlab.json
+
+test:
+  stage: check
+  image: node:20-alpine
+  tags:
+    - protei-lab-docker-runner
+  before_script:
+    - apk add git
+    - rm -rf ./build
+    - sh ./scripts/install.sh --ci
+  script:
+    - sh ./scripts/test.sh --ci --ci-gitlab
+  after_script:
+    - mkdir -p ./build
+    - cp -R ./packages/app/globus/build/jest-coverage/lcov-report ./build/jest-lcov-report
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    paths:
+      - ./build/jest-lcov-report/*
+
+build:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+deploy:
+  stage: deploy
+  script:
+    - rsync -avz dist/ user@server:/path/
+  only:
+    - main

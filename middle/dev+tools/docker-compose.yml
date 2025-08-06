@@ -8,11 +8,26 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-      - NEXT_PUBLIC_SERVER_URL_ARG=${NEXT_PUBLIC_SERVER_URL}
+        - NEXT_PUBLIC_SERVER_URL_ARG=${NEXT_PUBLIC_SERVER_URL}
     restart: unless-stopped
     ports:
-      # Пробрасываем порт контейнера НА порт ХОСТА,
-      # но слушаем ТОЛЬКО на localhost (127.0.0.1) хост-машины.
       - "127.0.0.1:${HOST_PORT:-3010}:3000"
     env_file:
       - .env
+    volumes:
+      - app-data:/app/storage
+    user: "1001:1001"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+    networks:
+      - private-net
+
+volumes:
+  app-data:
+
+networks:
+  private-net:
+    driver: bridge

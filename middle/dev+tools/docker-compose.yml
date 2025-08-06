@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    image: ${COMPOSE_PROJECT_NAME:-example-project}:${IMAGE_TAG:-latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-example-project}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+      - NEXT_PUBLIC_SERVER_URL_ARG=${NEXT_PUBLIC_SERVER_URL}
+    restart: unless-stopped
+    ports:
+      # Пробрасываем порт контейнера НА порт ХОСТА,
+      # но слушаем ТОЛЬКО на localhost (127.0.0.1) хост-машины.
+      - "127.0.0.1:${HOST_PORT:-3010}:3000"
+    env_file:
+      - .env

@@ -2,6 +2,8 @@
  * Может при помощи canvas модифицировать изображения.
  */
 
+// ------------------------------------------------------------
+
 import React, { useRef, useState } from "react";
 
 export function ImageEditor() {
